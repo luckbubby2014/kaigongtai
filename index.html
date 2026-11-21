@@ -24,6 +24,17 @@
     </nav>
     <div class="header-actions">
       <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
+      <div class="switcher" id="lang-switch">
+        <button type="button" data-lang-set="zh">中</button>
+        <button type="button" data-lang-set="en">EN</button>
+        <button type="button" data-lang-set="ja">日本語</button>
+      </div>
+      <div class="switcher theme-switch" id="theme-switch">
+        <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
+        <button type="button" class="theme-dot-night" data-theme-set="night" title="暗夜" aria-label="暗夜"></button>
+        <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
+        <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
+      </div>
       <a class="btn btn-ghost btn-small" href="about.html">关于</a>
       <a class="btn btn-small" href="app.html">打开工台</a>
     </div>
@@ -43,27 +54,7 @@
         <a class="btn btn-ghost" href="help.html">看看怎么用</a>
       </div>
 
-      <!-- 语言与界面风格 -->
-      <div class="launcher-controls">
-        <div>
-          <span class="pick-label">语言</span>
-          <div class="switcher" id="lang-switch">
-            <button type="button" data-lang-set="zh">中</button>
-            <button type="button" data-lang-set="en">EN</button>
-            <button type="button" data-lang-set="ja">日本語</button>
-          </div>
-        </div>
-        <div>
-          <span class="pick-label">风格</span>
-          <div class="switcher theme-switch" id="theme-switch">
-            <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
-            <button type="button" class="theme-dot-night" data-theme-set="night" title="暗夜" aria-label="暗夜"></button>
-            <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
-            <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
-          </div>
-        </div>
-      </div>
-      <p class="hero-note">选择会保存在你的浏览器里，下次打开自动生效。</p>
+      <p class="hero-note">无需注册 · 数据默认保存在你自己的浏览器里 · 可随时导出备份</p>
 
       <!-- 分区入口 -->
       <div class="zone-grid">
