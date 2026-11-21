@@ -13,18 +13,70 @@
   var currentView = { kind: 'today', projectId: null };
   var currentTab = 'overview';
   var projectFilter = 'all';
+  var creating = false;
 
   function load() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return emptyState();
-      var parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.projects)) return emptyState();
-      if (!Array.isArray(parsed.inbox)) parsed.inbox = [];
-      return parsed;
+      return normalizeState(JSON.parse(raw));
     } catch (e) {
       return emptyState();
     }
+  }
+
+  /* 数据清洗：容忍旧版/损坏/手改过的数据，避免渲染崩溃 */
+  function normalizeState(s) {
+    if (!s || typeof s !== 'object') return emptyState();
+    if (!Array.isArray(s.projects)) s.projects = [];
+    if (!Array.isArray(s.inbox)) s.inbox = [];
+
+    s.projects = s.projects.filter(function (p) { return p && typeof p === 'object'; }).map(function (p) {
+      return {
+        id: typeof p.id === 'string' && p.id ? p.id : uid(),
+        name: String(p.name || '未命名项目'),
+        goal: String(p.goal || ''),
+        status: ['active', 'paused', 'done'].indexOf(p.status) > -1 ? p.status : 'active',
+        due: String(p.due || ''),
+        next: String(p.next || ''),
+        result: String(p.result || ''),
+        review: String(p.review || ''),
+        fromTemplate: typeof p.fromTemplate === 'string' ? p.fromTemplate : '',
+        tasks: (Array.isArray(p.tasks) ? p.tasks : []).filter(function (t) { return t && typeof t === 'object'; }).map(function (t) {
+          return {
+            id: typeof t.id === 'string' && t.id ? t.id : uid(),
+            text: String(t.text || '').trim() || '未命名任务',
+            stage: String(t.stage || ''),
+            status: ['todo', 'doing', 'done', 'stuck'].indexOf(t.status) > -1 ? t.status : 'todo'
+          };
+        }),
+        materials: (Array.isArray(p.materials) ? p.materials : []).filter(function (m) { return m && typeof m === 'object'; }).map(function (m) {
+          return {
+            id: typeof m.id === 'string' && m.id ? m.id : uid(),
+            title: String(m.title || m.url || '未命名资料'),
+            url: safeUrl(m.url),
+            note: String(m.note || '')
+          };
+        }),
+        logs: (Array.isArray(p.logs) ? p.logs : []).filter(function (l) { return l && typeof l === 'object'; }).map(function (l) {
+          return { id: typeof l.id === 'string' && l.id ? l.id : uid(), date: String(l.date || ''), text: String(l.text || '') };
+        }),
+        createdAt: p.createdAt || new Date().toISOString(),
+        updatedAt: p.updatedAt || new Date().toISOString()
+      };
+    });
+
+    s.inbox = s.inbox.filter(function (i) { return i && typeof i === 'object'; }).map(function (i) {
+      return { id: typeof i.id === 'string' && i.id ? i.id : uid(), text: String(i.text || ''), date: String(i.date || '') };
+    });
+
+    return s;
+  }
+
+  /* 只允许 http(s) 链接，过滤 javascript: 等伪协议 */
+  function safeUrl(u) {
+    u = String(u || '').trim();
+    return /^https?:\/\//i.test(u) ? u : '';
   }
 
   function save() {
@@ -104,6 +156,18 @@
     }
 
     document.getElementById('inbox-count').textContent = state.inbox.length ? '(' + state.inbox.length + ')' : '';
+
+    var slot = document.getElementById('create-slot');
+    if (slot) {
+      slot.innerHTML = creating
+        ? '<form data-action="new-project" class="create-form" style="display:grid;gap:8px;margin-bottom:12px">' +
+          '<input type="text" name="name" placeholder="项目名称" autocomplete="off">' +
+          '<input type="text" name="goal" placeholder="最终要交付什么？（可选）" autocomplete="off">' +
+          '<div style="display:flex;gap:6px">' +
+          '<button class="btn btn-small" type="submit">创建</button>' +
+          '<button class="btn-plain" type="button" data-action="cancel-create">取消</button></div></form>'
+        : '';
+    }
 
     var filters = document.querySelectorAll('#project-filters .filter-chip');
     filters.forEach(function (btn) {
@@ -324,7 +388,15 @@
 
     switch (action) {
       case 'new-project':
-      case 'btn-new-project': break;
+        creating = true;
+        renderSidebar();
+        var createInput = document.querySelector('#create-slot input[name="name"]');
+        if (createInput) createInput.focus();
+        break;
+      case 'cancel-create':
+        creating = false;
+        renderSidebar();
+        break;
       case 'open-project':
         currentView = { kind: 'project', projectId: id };
         currentTab = 'overview';
@@ -389,6 +461,10 @@
         break;
       }
       case 'edit-next': {
+        if (currentTab !== 'overview') {
+          currentTab = 'overview';
+          render();
+        }
         var input = mainEl.querySelector('[data-field="next"]');
         if (input) { input.focus(); input.select(); }
         break;
@@ -438,20 +514,24 @@
   }
 
   /* 新建项目 */
-  document.getElementById('btn-new-project').addEventListener('click', createProject);
+  document.getElementById('btn-new-project').addEventListener('click', function () {
+    creating = true;
+    renderSidebar();
+    var createInput = document.querySelector('#create-slot input[name="name"]');
+    if (createInput) createInput.focus();
+  });
 
-  function createProject() {
-    var name = prompt('项目名称？（例如：个人作品集网站）');
-    if (name === null) return;
+  function createProject(name, goal) {
     var p = {
       id: uid(),
-      name: name.trim() || '未命名项目',
-      goal: '',
+      name: name || '未命名项目',
+      goal: goal || '',
       status: 'active',
       due: '',
       next: '',
       result: '',
       review: '',
+      fromTemplate: '',
       tasks: [],
       materials: [],
       logs: [],
@@ -474,6 +554,14 @@
     var fd = new FormData(form);
     var p = getProject(currentView.projectId);
 
+    if (action === 'new-project') {
+      var pname = String(fd.get('name') || '').trim();
+      if (!pname) return;
+      creating = false;
+      createProject(pname, String(fd.get('goal') || '').trim());
+      return;
+    }
+
     if (action === 'add-task') {
       var text = String(fd.get('text') || '').trim();
       if (!text || !p) return;
@@ -483,7 +571,7 @@
     if (action === 'add-material') {
       if (!p) return;
       var title = String(fd.get('title') || '').trim();
-      var url = String(fd.get('url') || '').trim();
+      var url = safeUrl(fd.get('url'));
       if (!title && !url) return;
       p.materials.push({ id: uid(), title: title || url, url: url, note: String(fd.get('note') || '').trim() });
     }
@@ -514,7 +602,7 @@
 
     if (action === 'set-field' && p) {
       p[el.getAttribute('data-field')] = el.value;
-      touch(p); save(); renderSidebar();
+      touch(p); save(); render();
     }
 
     if (action === 'set-status' && p) {
@@ -579,9 +667,9 @@
     reader.onload = function () {
       try {
         var data = JSON.parse(reader.result);
-        if (!data || !Array.isArray(data.projects)) throw new Error('bad');
+        if (!data || typeof data !== 'object' || !Array.isArray(data.projects)) throw new Error('bad');
         if (!confirm('导入会覆盖当前全部数据，确定继续？建议先导出当前备份。')) return;
-        state = { version: 1, projects: data.projects, inbox: Array.isArray(data.inbox) ? data.inbox : [] };
+        state = normalizeState(data);
         save();
         currentView = { kind: 'today', projectId: null };
         render();
@@ -593,6 +681,81 @@
     reader.readAsText(file);
     e.target.value = '';
   });
+
+  /* ---------- 模板库：app.html?tpl=xxx 一键创建项目 ---------- */
+
+  var TEMPLATES = {
+    portfolio: {
+      name: '个人作品集网站',
+      goal: '发布一个能在手机上正常浏览的个人作品集',
+      next: '为 6 个作品各选一张封面图',
+      tasks: [
+        ['准备', '选出 6 个作品'], ['准备', '整理每个作品的图片和说明'], ['准备', '写个人介绍初稿'],
+        ['制作', '确定首页结构'], ['制作', '制作作品展示页'], ['制作', '加入联系方式'],
+        ['发布', '检查手机端显示'], ['发布', '修复失效链接'], ['发布', '发布并记录网址']
+      ]
+    },
+    article: {
+      name: '写一篇深度长文',
+      goal: '完成并发布一篇 3000 字以上的长文',
+      next: '列出文章的三个核心观点',
+      tasks: [
+        ['选题', '确定主题与目标读者'], ['选题', '收集 5 个有价值的参考资料'], ['选题', '列出三个核心观点'],
+        ['写作', '写出提纲'], ['写作', '完成初稿（先写完再改）'], ['写作', '放一天再修改'],
+        ['发布', '校对两遍'], ['发布', '配图与排版'], ['发布', '发布并记录链接']
+      ]
+    },
+    illustration: {
+      name: '完成一组插画系列',
+      goal: '完成并发布一组 6 张的主题插画',
+      next: '画出第一张的草图',
+      tasks: [
+        ['构思', '确定主题与色调'], ['构思', '收集参考图'], ['构思', '列出 6 个画面'],
+        ['绘制', '完成 6 张草图'], ['绘制', '勾线稿'], ['绘制', '上色与调整'],
+        ['发布', '统一导出尺寸'], ['发布', '整理发布文案'], ['发布', '发布并记录']
+      ]
+    },
+    exam: {
+      name: '备考一门考试',
+      goal: '通过考试并达到目标分数',
+      next: '做一套真题摸底',
+      tasks: [
+        ['摸底', '做一套真题'], ['摸底', '整理错题类型'], ['摸底', '制定周计划'],
+        ['强化', '每周完成固定量的真题'], ['强化', '专项突破薄弱项'], ['强化', '整理错题本'],
+        ['冲刺', '模考 2 次'], ['冲刺', '调整作息'], ['冲刺', '准备考试日物品清单']
+      ]
+    },
+    move: {
+      name: '搬家准备',
+      goal: '完成搬家，一周内在新家正常生活',
+      next: '列出所有房间的物品清单',
+      tasks: [
+        ['计划', '定搬家日期'], ['计划', '列物品清单'], ['计划', '预约搬家公司'],
+        ['打包', '打包非日常用品'], ['打包', '每个箱子贴标签'], ['打包', '准备搬家日急救箱'],
+        ['入住', '检查水电燃气网络'], ['入住', '归位整理'], ['入住', '处理多余物品']
+      ]
+    }
+  };
+
+  (function applyTemplate() {
+    var m = /[?&]tpl=([\w-]+)/.exec(location.search || '');
+    if (!m) return;
+    var tpl = TEMPLATES[m[1]];
+    if (!tpl) return;
+    var exists = state.projects.some(function (p) { return p.fromTemplate === m[1]; });
+    if (exists) return;
+    var p = {
+      id: uid(), name: tpl.name, goal: tpl.goal, status: 'active', due: '',
+      next: tpl.next, result: '', review: '', fromTemplate: m[1],
+      tasks: tpl.tasks.map(function (t) { return { id: uid(), text: t[1], stage: t[0], status: 'todo' }; }),
+      materials: [], logs: [],
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    };
+    state.projects.push(p);
+    save();
+    currentView = { kind: 'project', projectId: p.id };
+    currentTab = 'overview';
+  })();
 
   /* 启动 */
   render();

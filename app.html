@@ -15,10 +15,14 @@
     <a class="brand" href="index.html"><span class="mark">开</span>开工台</a>
     <nav class="nav">
       <a href="index.html#features">功能</a>
+      <a href="scenarios.html">使用场景</a>
+      <a href="templates.html">模板库</a>
       <a href="help.html">使用帮助</a>
       <a href="faq.html">常见问题</a>
+      <a href="changelog.html">更新日志</a>
     </nav>
     <div class="header-actions">
+      <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
       <button class="btn btn-ghost btn-small" id="btn-export" type="button">导出备份</button>
       <button class="btn btn-ghost btn-small" id="btn-import" type="button">导入</button>
       <input type="file" id="import-file" accept="application/json,.json" hidden>
@@ -31,7 +35,9 @@
   <aside class="app-side">
     <div class="side-actions">
       <button class="btn btn-small" id="btn-new-project" type="button">＋ 新建项目</button>
+      <a class="btn btn-ghost btn-small" href="templates.html">从模板开始</a>
     </div>
+    <div id="create-slot"></div>
 
     <div>
       <h4>项目</h4>
@@ -46,7 +52,7 @@
 
     <div class="side-actions">
       <button class="btn btn-ghost btn-small" id="btn-inbox" type="button">收集箱 <span id="inbox-count"></span></button>
-      <button class="btn-ghost btn-plain" id="btn-today" type="button">← 今天从哪继续</button>
+      <button class="btn btn-ghost btn-small" id="btn-today" type="button">← 今天从哪继续</button>
     </div>
 
     <p class="small muted" style="margin-top:auto;margin-bottom:0">
@@ -73,11 +79,7 @@
 </footer>
 
 <script src="assets/app.js"></script>
-<script>
-  document.querySelectorAll('[data-year]').forEach(function (el) {
-    el.textContent = new Date().getFullYear();
-  });
-</script>
+<script src="assets/site.js"></script>
 
 </body>
 </html>

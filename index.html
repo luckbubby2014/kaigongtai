@@ -15,12 +15,14 @@
     <a class="brand" href="index.html"><span class="mark">开</span>开工台</a>
     <nav class="nav">
       <a href="index.html#features">功能</a>
-      <a href="index.html#how">怎么用</a>
-      <a href="index.html#example">使用示例</a>
+      <a href="scenarios.html">使用场景</a>
+      <a href="templates.html">模板库</a>
       <a href="help.html">使用帮助</a>
       <a href="faq.html">常见问题</a>
+      <a href="changelog.html">更新日志</a>
     </nav>
     <div class="header-actions">
+      <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
       <a class="btn btn-ghost btn-small" href="about.html">关于</a>
       <a class="btn btn-small" href="app.html">打开工台</a>
     </div>
@@ -180,6 +182,55 @@
     </div>
   </section>
 
+  <!-- 使用场景 -->
+  <section class="section" id="scenes">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">使用场景</span>
+        <h2>凡是持续几周、有明确交付物的事。</h2>
+        <p>写作、插画、做网站、备考、搬家、长期副业……用法都一样：写清目标，定下下一步，记录进度。</p>
+      </div>
+      <div class="grid grid-3">
+        <div class="card"><h3>写作与投稿</h3><p>长文、专栏、小说章节。把“再想想”换成“接着写下一节”。</p></div>
+        <div class="card"><h3>插画与视觉创作</h3><p>插画系列、海报、约稿。用日志记住每张的真实用时，不再无限修图。</p></div>
+        <div class="card"><h3>做网站或小产品</h3><p>作品集、个人主页、小工具。新想法进收集箱，先发布再加。</p></div>
+        <div class="card"><h3>备考与学习</h3><p>语言考试、资格证、自学课程。中断后从错题本接上，不必重排计划。</p></div>
+        <div class="card"><h3>生活里的大动作</h3><p>搬家、旅行、装修。琐事全进收集箱，截止日期帮你盯着。</p></div>
+        <div class="card"><h3>长期副业</h3><p>周边小店、播客、开源项目。两个月后回来，还能接着推进。</p></div>
+      </div>
+      <p class="mt-24"><a class="btn btn-ghost btn-small" href="scenarios.html">看每个场景的具体用法</a></p>
+    </div>
+  </section>
+
+  <!-- 模板库 -->
+  <section class="section" id="templates">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">模板库</span>
+        <h2>不用从空白开始。</h2>
+        <p>模板带有目标示例和按阶段拆好的任务，点一下就生成一个可以直接编辑的项目。</p>
+      </div>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>个人作品集网站</h3>
+          <p>准备 → 制作 → 发布，9 个任务。适合设计师、插画师、摄影师。</p>
+          <p><a class="btn btn-small" href="app.html?tpl=portfolio">用模板创建</a></p>
+        </div>
+        <div class="card">
+          <h3>写一篇深度长文</h3>
+          <p>选题 → 写作 → 发布，9 个任务。先写完再改，写作者的推进结构。</p>
+          <p><a class="btn btn-small" href="app.html?tpl=article">用模板创建</a></p>
+        </div>
+        <div class="card">
+          <h3>完成一组插画系列</h3>
+          <p>构思 → 绘制 → 发布，9 个任务。草图、线稿、上色分开推进。</p>
+          <p><a class="btn btn-small" href="app.html?tpl=illustration">用模板创建</a></p>
+        </div>
+      </div>
+      <p class="mt-24"><a class="btn btn-ghost btn-small" href="templates.html">看全部 5 个模板（含备考、搬家）</a></p>
+    </div>
+  </section>
+
   <!-- 原则 -->
   <section class="section band-soft">
     <div class="wrap">
@@ -198,6 +249,29 @@
         </div>
       </div>
       <p class="small muted mt-24">开工台是独立的个人工具，与任何大模型公司或其产品没有隶属、授权或合作关系。详见 <a href="disclaimer.html" style="text-decoration:underline">免责声明</a>。</p>
+    </div>
+  </section>
+
+  <!-- 更新日志 -->
+  <section class="section" id="news">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">更新日志</span>
+        <h2>最近的改进。</h2>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="tpl-meta"><span>v1.1 · 2026 年 2 月</span></div>
+          <h3>排版与内容扩充</h3>
+          <p>全新字体排版；新增使用场景与模板库；修复移动端导航、深色区块文字、数据导入校验等问题。</p>
+        </div>
+        <div class="card">
+          <div class="tpl-meta"><span>v1.0 · 2026 年 2 月</span></div>
+          <h3>第一个版本</h3>
+          <p>项目、下一步、任务、资料、日志、收集箱与数据备份，一次到位。</p>
+        </div>
+      </div>
+      <p class="mt-24"><a class="btn btn-ghost btn-small" href="changelog.html">完整更新记录</a></p>
     </div>
   </section>
 
@@ -224,23 +298,25 @@
         <ul>
           <li><a href="app.html">打开工台</a></li>
           <li><a href="index.html#features">功能</a></li>
+          <li><a href="templates.html">模板库</a></li>
+          <li><a href="changelog.html">更新日志</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>帮助</h4>
+        <ul>
+          <li><a href="scenarios.html">使用场景</a></li>
           <li><a href="help.html">使用帮助</a></li>
           <li><a href="faq.html">常见问题</a></li>
+          <li><a href="about.html">关于本站</a></li>
         </ul>
       </div>
       <div>
-        <h4>关于</h4>
+        <h4>法律</h4>
         <ul>
-          <li><a href="about.html">关于本站</a></li>
-          <li><a href="disclaimer.html">免责声明</a></li>
           <li><a href="privacy.html">隐私政策</a></li>
           <li><a href="terms.html">服务条款</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>联系</h4>
-        <ul>
-          <li><a href="about.html#contact">联系方式</a></li>
+          <li><a href="disclaimer.html">免责声明</a></li>
           <li><a href="disclaimer.html#ip">知识产权与侵权投诉</a></li>
         </ul>
       </div>
@@ -255,11 +331,7 @@
   </div>
 </footer>
 
-<script>
-  document.querySelectorAll('[data-year]').forEach(function (el) {
-    el.textContent = new Date().getFullYear();
-  });
-</script>
+<script src="assets/site.js"></script>
 
 </body>
 </html>
