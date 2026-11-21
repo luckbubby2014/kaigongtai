@@ -7,6 +7,7 @@
 <meta name="description" content="开工台免责声明：站点性质与独立性声明、商标与品牌声明、工具与数据免责、外部链接免责、知识产权与侵权投诉流程。">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/styles.css">
+<script>(function(){try{var t=localStorage.getItem('kg-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
 <body>
 
@@ -23,6 +24,17 @@
     </nav>
     <div class="header-actions">
       <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
+      <div class="switcher" id="lang-switch">
+        <button type="button" data-lang-set="zh">中</button>
+        <button type="button" data-lang-set="en">EN</button>
+        <button type="button" data-lang-set="ja">日本語</button>
+      </div>
+      <div class="switcher theme-switch" id="theme-switch">
+        <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
+        <button type="button" class="theme-dot-night" data-theme-set="night" title="暗夜" aria-label="暗夜"></button>
+        <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
+        <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
+      </div>
       <a class="btn btn-ghost btn-small" href="about.html">关于</a>
       <a class="btn btn-small" href="app.html">打开工台</a>
     </div>
@@ -152,6 +164,7 @@
   </div>
 </footer>
 
+<script src="assets/i18n.js"></script>
 <script src="assets/site.js"></script>
 
 </body>

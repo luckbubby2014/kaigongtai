@@ -83,7 +83,7 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
-      alert('保存失败：浏览器存储空间不足或被禁用。请使用“导出备份”保存数据。');
+      alert(tr('保存失败：浏览器存储空间不足或被禁用。请使用“导出备份”保存数据。'));
     }
   }
 
@@ -93,6 +93,11 @@
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  /* 文案翻译：i18n.js 未加载时原样返回 */
+  function tr(key) {
+    return window.KG_t ? window.KG_t(key) : key;
   }
 
   function today() {
@@ -150,7 +155,7 @@
         var on = currentView.kind === 'project' && currentView.projectId === p.id ? ' on' : '';
         return '<button class="project-item' + on + '" data-action="open-project" data-id="' + p.id + '" type="button">' +
           '<span class="pname">' + esc(p.name || '未命名项目') + '</span>' +
-          '<span class="pmeta">' + STATUS_LABEL[p.status] + (p.next ? ' · 有下一步' : ' · 缺下一步') + '</span>' +
+          '<span class="pmeta">' + tr(STATUS_LABEL[p.status]) + (p.next ? tr(' · 有下一步') : tr(' · 缺下一步')) + '</span>' +
           '</button>';
       }).join('');
     }
@@ -194,7 +199,7 @@
         return '<div class="next-card">' +
           '<div class="label">' + esc(p.name || '未命名项目') + '</div>' +
           '<div class="value">' + (p.next ? esc(p.next) : '还没有下一步') + '</div>' +
-          (lastLog ? '<div class="muted small">上次进度（' + esc(lastLog.date) + '）：' + esc(lastLog.text) + '</div>' : '<div class="muted small">还没有工作记录。</div>') +
+          (lastLog ? '<div class="muted small">' + tr('上次进度（{date}）：{text}').replace('{date}', esc(lastLog.date)).replace('{text}', esc(lastLog.text)) + '</div>' : '<div class="muted small">' + tr('还没有工作记录。') + '</div>') +
           '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">' +
           '<button class="btn btn-small" data-action="open-project" data-id="' + p.id + '" type="button">打开项目</button>' +
           (p.next ? '<button class="btn btn-ghost btn-small" data-action="finish-next" data-id="' + p.id + '" type="button">这步做完了</button>' : '') +
@@ -209,7 +214,7 @@
         html += '<h3 class="mt-40">其他项目</h3><div class="project-list">' + others.map(function (p) {
           return '<button class="project-item" data-action="open-project" data-id="' + p.id + '" type="button">' +
             '<span class="pname">' + esc(p.name || '未命名项目') + '</span>' +
-            '<span class="pmeta">' + STATUS_LABEL[p.status] + '</span></button>';
+            '<span class="pmeta">' + tr(STATUS_LABEL[p.status]) + '</span></button>';
         }).join('') + '</div>';
       }
     }
@@ -221,7 +226,7 @@
       '<input type="text" name="text" placeholder="例如：参考一下某某网站的导航布局" autocomplete="off">' +
       '<button class="btn btn-small" type="submit">记下</button></form>' +
       (state.inbox.length
-        ? '<p class="small muted">收集箱里有 ' + state.inbox.length + ' 条待整理。<button class="btn-plain" data-action="open-inbox" type="button">去整理 →</button></p>'
+        ? '<p class="small muted">' + tr('收集箱里有 {n} 条待整理。').replace('{n}', state.inbox.length) + ' <button class="btn-plain" data-action="open-inbox" type="button">' + tr('去整理 →') + '</button></p>'
         : '<p class="small muted">收集箱是空的。</p>');
 
     mainEl.innerHTML = html;
@@ -293,7 +298,7 @@
           html += p.tasks.filter(function (t) { return (t.stage || '未分阶段') === stage; }).map(function (t) {
             var cls = t.status === 'done' ? ' done' : (t.status === 'stuck' ? ' stuck' : '');
             return '<div class="task-row' + cls + '">' +
-              '<span class="status-chip ' + t.status + '" data-action="cycle-task" data-id="' + t.id + '" title="点击切换状态">' + TASK_LABEL[t.status] + '</span>' +
+              '<span class="status-chip ' + t.status + '" data-action="cycle-task" data-id="' + t.id + '" title="点击切换状态">' + tr(TASK_LABEL[t.status]) + '</span>' +
               '<span class="task-text" data-action="cycle-task" data-id="' + t.id + '">' + esc(t.text) + '</span>' +
               '<span class="row-actions">' +
               '<button class="btn-plain" data-action="toggle-stuck" data-id="' + t.id + '" type="button">' + (t.status === 'stuck' ? '取消卡住' : '卡住了') + '</button>' +
@@ -454,7 +459,7 @@
       case 'finish-next': {
         var p6 = getProject(id || currentView.projectId);
         if (p6 && p6.next) {
-          p6.logs.push({ id: uid(), date: today(), text: '完成下一步：' + p6.next });
+          p6.logs.push({ id: uid(), date: today(), text: tr('完成下一步：{step}').replace('{step}', p6.next) });
           p6.next = '';
           touch(p6); save(); render();
         }
@@ -474,7 +479,7 @@
         if (src) {
           var copy = JSON.parse(JSON.stringify(src));
           copy.id = uid();
-          copy.name = src.name + '（副本）';
+          copy.name = tr('{name}（副本）').replace('{name}', src.name);
           copy.status = 'active';
           copy.logs = [];
           copy.result = '';
@@ -489,7 +494,7 @@
         break;
       }
       case 'delete-project': {
-        if (confirm('确定删除这个项目？它的任务、资料和日志都会一起删除。建议先导出备份。')) {
+        if (confirm(tr('确定删除这个项目？它的任务、资料和日志都会一起删除。建议先导出备份。'))) {
           state.projects = state.projects.filter(function (p) { return p.id !== id; });
           save();
           currentView = { kind: 'today', projectId: null };
@@ -668,14 +673,14 @@
       try {
         var data = JSON.parse(reader.result);
         if (!data || typeof data !== 'object' || !Array.isArray(data.projects)) throw new Error('bad');
-        if (!confirm('导入会覆盖当前全部数据，确定继续？建议先导出当前备份。')) return;
+        if (!confirm(tr('导入会覆盖当前全部数据，确定继续？建议先导出当前备份。'))) return;
         state = normalizeState(data);
         save();
         currentView = { kind: 'today', projectId: null };
         render();
-        alert('导入完成。');
+        alert(tr('导入完成。'));
       } catch (err) {
-        alert('导入失败：文件格式不正确。');
+        alert(tr('导入失败：文件格式不正确。'));
       }
     };
     reader.readAsText(file);
@@ -759,5 +764,6 @@
 
   /* 启动 */
   render();
+  if (window.KG_localize) window.KG_localize(document.body);
 
 })();

@@ -7,6 +7,7 @@
 <meta name="description" content="开工台工作界面：管理项目、安排下一步、保存参考资料、记录工作进度。数据默认保存在你自己的浏览器里。">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/styles.css">
+<script>(function(){try{var t=localStorage.getItem('kg-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
 <body>
 
@@ -23,6 +24,17 @@
     </nav>
     <div class="header-actions">
       <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
+      <div class="switcher" id="lang-switch">
+        <button type="button" data-lang-set="zh">中</button>
+        <button type="button" data-lang-set="en">EN</button>
+        <button type="button" data-lang-set="ja">日本語</button>
+      </div>
+      <div class="switcher theme-switch" id="theme-switch">
+        <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
+        <button type="button" class="theme-dot-night" data-theme-set="night" title="暗夜" aria-label="暗夜"></button>
+        <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
+        <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
+      </div>
       <button class="btn btn-ghost btn-small" id="btn-export" type="button">导出备份</button>
       <button class="btn btn-ghost btn-small" id="btn-import" type="button">导入</button>
       <input type="file" id="import-file" accept="application/json,.json" hidden>
@@ -78,6 +90,7 @@
   </div>
 </footer>
 
+<script src="assets/i18n.js"></script>
 <script src="assets/app.js"></script>
 <script src="assets/site.js"></script>
 

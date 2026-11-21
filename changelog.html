@@ -7,6 +7,7 @@
 <meta name="description" content="开工台更新日志：版本记录与功能变化。">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/styles.css">
+<script>(function(){try{var t=localStorage.getItem('kg-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 </head>
 <body>
 
@@ -23,6 +24,17 @@
     </nav>
     <div class="header-actions">
       <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
+      <div class="switcher" id="lang-switch">
+        <button type="button" data-lang-set="zh">中</button>
+        <button type="button" data-lang-set="en">EN</button>
+        <button type="button" data-lang-set="ja">日本語</button>
+      </div>
+      <div class="switcher theme-switch" id="theme-switch">
+        <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
+        <button type="button" class="theme-dot-night" data-theme-set="night" title="暗夜" aria-label="暗夜"></button>
+        <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
+        <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
+      </div>
       <a class="btn btn-ghost btn-small" href="about.html">关于</a>
       <a class="btn btn-small" href="app.html">打开工台</a>
     </div>
@@ -38,6 +50,17 @@
     </div>
 
     <div class="timeline mt-40">
+      <div class="timeline-item">
+        <div class="when">v1.2 · 2026 年 2 月</div>
+        <h3>分区与多语言</h3>
+        <ul>
+          <li>首页改为分区启动台：不再一屏滚到底，八个栏目入口一目了然。</li>
+          <li>新增多种界面风格：纸感米色、暗夜、青灰、靛蓝，全站可切换并记住选择。</li>
+          <li>新增多语言：简体中文 / English / 日本語，界面与主要页面可切换（法律正文以中文为准）。</li>
+          <li>新增「产品概览」页，收录与待办清单的区别、使用示例、功能清单与产品原则。</li>
+        </ul>
+      </div>
+
       <div class="timeline-item">
         <div class="when">v1.1 · 2026 年 2 月</div>
         <h3>排版与内容扩充</h3>
@@ -116,6 +139,7 @@
   </div>
 </footer>
 
+<script src="assets/i18n.js"></script>
 <script src="assets/site.js"></script>
 
 </body>
