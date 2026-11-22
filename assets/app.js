@@ -14,6 +14,8 @@
   var currentTab = 'overview';
   var projectFilter = 'all';
   var creating = false;
+var searchQuery = '';
+var timer = { total: 25 * 60, left: 25 * 60, handle: null };
 
   function load() {
     try {
@@ -147,6 +149,93 @@
     }
   }
 
+  function isOverdue(p) {
+    return !!(p && p.due && p.status !== 'done' && p.due < today());
+  }
+
+  function toast(msg, undoFn) {
+    if (typeof document.createElement !== 'function') return;
+    var wrap = document.getElementById('toast-wrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'toast-wrap';
+      document.body.appendChild(wrap);
+    }
+    var node = document.createElement('div');
+    node.className = 'toast';
+    var span = document.createElement('span');
+    span.textContent = msg;
+    node.appendChild(span);
+
+    function remove() {
+      if (!node.parentNode) return;
+      node.classList.add('hide');
+      setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 320);
+    }
+
+    if (undoFn) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = tr('撤销');
+      btn.addEventListener('click', function () { undoFn(); remove(); });
+      node.appendChild(btn);
+    }
+    wrap.appendChild(node);
+    setTimeout(remove, 4600);
+  }
+
+  function fmtClock(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function syncTimerUI() {
+    var timeEl = document.querySelector('#timer-card .timer-time');
+    if (timeEl) timeEl.textContent = fmtClock(timer.left);
+    var ring = document.querySelector('#timer-card .ring-fg');
+    if (ring) ring.style.strokeDashoffset = String(Math.round(226 * (1 - timer.left / timer.total)));
+    var btn = document.querySelector('#timer-card [data-action="timer-toggle"]');
+    if (btn) btn.textContent = timer.handle ? tr('暂停') : tr('开始');
+  }
+
+  function timerToggle() {
+    if (timer.handle) {
+      clearInterval(timer.handle);
+      timer.handle = null;
+      syncTimerUI();
+      return;
+    }
+    timer.handle = setInterval(function () {
+      timer.left = Math.max(0, timer.left - 1);
+      syncTimerUI();
+      if (timer.left === 0) {
+        clearInterval(timer.handle);
+        timer.handle = null;
+        timer.left = timer.total;
+        var ringEl = document.querySelector('#timer-card .timer-ring');
+        if (ringEl && ringEl.getBoundingClientRect) {
+          var r = ringEl.getBoundingClientRect();
+          burst(r.left + r.width / 2, r.top + r.height / 2);
+        }
+        var pt = getProject(currentView.projectId);
+        if (pt) {
+          pt.logs.push({ id: uid(), date: today(), text: tr('专注 {m} 分钟完成').replace('{m}', Math.round(timer.total / 60)) });
+          touch(pt); save();
+        }
+        toast(tr('专注计时完成'));
+        render();
+      }
+    }, 1000);
+    syncTimerUI();
+  }
+
+  function timerReset() {
+    if (timer.handle) { clearInterval(timer.handle); timer.handle = null; }
+    timer.left = timer.total;
+    syncTimerUI();
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -185,11 +274,18 @@
   function renderSidebar() {
     var listEl = document.getElementById('project-list');
     var projects = state.projects.filter(function (p) {
-      return projectFilter === 'all' || p.status === projectFilter;
+      if (projectFilter !== 'all' && p.status !== projectFilter) return false;
+      if (searchQuery) {
+        var q = searchQuery.toLowerCase();
+        var hay = (p.name || '') + ' ' + (p.goal || '') + ' ' + (p.next || '');
+        return hay.toLowerCase().indexOf(q) > -1;
+      }
+      return true;
     });
 
     if (!projects.length) {
-      listEl.innerHTML = '<p class="small muted" style="padding:6px 4px">还没有项目，点上方“新建项目”开始。</p>';
+      listEl.innerHTML = '<p class="small muted" style="padding:6px 4px">' +
+        (searchQuery ? tr('没有找到匹配的项目。') : '还没有项目，点上方“新建项目”开始。') + '</p>';
     } else {
       listEl.innerHTML = projects.map(function (p) {
         var on = currentView.kind === 'project' && currentView.projectId === p.id ? ' on' : '';
@@ -241,6 +337,26 @@
       '<div class="stat"><div class="n">' + active.length + '</div><div class="l">' + tr('进行中项目') + '</div></div>' +
       '</div></div>';
 
+    /* 近 7 天完成趋势 */
+    var trend = [];
+    for (var d6 = 6; d6 >= 0; d6--) {
+      var dt = new Date();
+      dt.setDate(dt.getDate() - d6);
+      var key = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+      var cnt = 0;
+      state.projects.forEach(function (p) {
+        (p.logs || []).forEach(function (l) { if (l.date === key) cnt++; });
+      });
+      trend.push({ label: (dt.getMonth() + 1) + '/' + dt.getDate(), count: cnt });
+    }
+    var maxCount = 1;
+    trend.forEach(function (t) { if (t.count > maxCount) maxCount = t.count; });
+    html += '<h3 class="mt-40">' + tr('近 7 天') + '</h3><div class="trend-bars">' +
+      trend.map(function (t, i) {
+        var h = Math.max(6, Math.round(t.count / maxCount * 100));
+        return '<div class="tb"><i style="height:' + h + '%;animation-delay:' + (i * 60) + 'ms" title="' + t.count + '"></i><span>' + t.label + '</span></div>';
+      }).join('') + '</div>';
+
     if (!state.projects.length) {
       html += '<div class="empty"><p>还没有项目。先创建一个，写清最终要交付什么。</p>' +
         '<button class="btn btn-small" data-action="new-project" type="button">＋ 新建项目</button></div>';
@@ -250,7 +366,7 @@
       html += active.map(function (p) {
         var lastLog = p.logs && p.logs.length ? p.logs[p.logs.length - 1] : null;
         return '<div class="next-card">' +
-          '<div class="label">' + esc(p.name || '未命名项目') + '</div>' +
+          '<div class="label">' + esc(p.name || '未命名项目') + (isOverdue(p) ? ' <span class="pill pill-overdue">' + tr('逾期') + '</span>' : '') + '</div>' +
           '<div class="value">' + (p.next ? esc(p.next) : '还没有下一步') + '</div>' +
           (lastLog ? '<div class="muted small">' + tr('上次进度（{date}）：{text}').replace('{date}', esc(lastLog.date)).replace('{text}', esc(lastLog.text)) + '</div>' : '<div class="muted small">' + tr('还没有工作记录。') + '</div>') +
           '<div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">' +
@@ -291,6 +407,7 @@
     var totalTasks = (p.tasks || []).length;
     var doneTasks = (p.tasks || []).filter(function (x) { return x.status === 'done'; }).length;
     var pct = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
+    var overdue = isOverdue(p);
 
     var html = '<div class="app-toolbar">' +
       '<h2 class="mb-0" style="flex:1;min-width:200px">' + esc(p.name || '未命名项目') + '</h2>' +
@@ -300,9 +417,11 @@
       }).join('') +
       '</select>' +
       '<button class="btn-plain" data-action="copy-project" data-id="' + p.id + '" type="button">复制为新项目</button>' +
+      '<button class="btn-plain" data-action="copy-summary" data-id="' + p.id + '" type="button">' + tr('复制项目摘要') + '</button>' +
       '<button class="btn-plain" data-action="delete-project" data-id="' + p.id + '" type="button" style="color:var(--danger)">' + tr('删除') + '</button>' +
       '</div>' +
-      '<div class="progress-wrap" title="' + tr('任务进度') + '"><div class="progress-bar"><i style="width:' + pct + '%"></i></div><span class="progress-num">' + pct + '%</span></div>';
+      '<div class="progress-wrap" title="' + tr('任务进度') + '"><div class="progress-bar"><i style="width:' + pct + '%"></i></div><span class="progress-num">' + pct + '%</span></div>' +
+      (overdue ? '<div style="margin:10px 0 0"><span class="pill pill-overdue">' + tr('逾期') + '：' + esc(p.due) + '</span></div>' : '');
 
     if (!p.next) {
       html += '<div class="notice">这个项目还没有<strong>下一步</strong>。定一个马上能做的动作，下次打开就能直接开工。</div>';
@@ -323,6 +442,17 @@
       }).join('') + '</div>';
 
     if (currentTab === 'overview') {
+      html += '<div class="timer-card" id="timer-card">' +
+        '<div class="timer-ring">' +
+        '<svg width="84" height="84" viewBox="0 0 84 84"><circle class="ring-bg" cx="42" cy="42" r="36" fill="none" stroke-width="7"></circle><circle class="ring-fg" cx="42" cy="42" r="36" fill="none" stroke-width="7"></circle></svg>' +
+        '<div class="timer-time">' + fmtClock(timer.left) + '</div></div>' +
+        '<div class="timer-info"><div class="t-title">' + tr('专注计时') + '</div>' +
+        '<div class="t-sub">' + tr('点击开始，完成后会记入工作日志。') + '</div></div>' +
+        '<div class="timer-actions">' +
+        '<button class="btn btn-small" data-action="timer-toggle" type="button">' + (timer.handle ? tr('暂停') : tr('开始')) + '</button>' +
+        '<button class="btn btn-ghost btn-small" data-action="timer-reset" type="button">' + tr('重置') + '</button>' +
+        '</div></div>';
+
       html += '<div class="stat-row">' +
         '<div class="stat"><div class="n">' + doneTasks + '/' + (p.tasks || []).length + '</div><div class="l">任务完成</div></div>' +
         '<div class="stat"><div class="n">' + (p.materials || []).length + '</div><div class="l">参考资料</div></div>' +
@@ -336,10 +466,11 @@
     }
 
     if (currentTab === 'tasks') {
-      html += '<form data-action="add-task" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">' +
+      html += '<form data-action="add-task" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">' +
         '<input type="text" name="text" placeholder="要做的事" style="flex:1;min-width:180px" autocomplete="off">' +
         '<input type="text" name="stage" placeholder="阶段，如：准备" style="width:120px" autocomplete="off">' +
         '<button class="btn btn-small" type="submit">添加</button></form>';
+      html += '<input class="search-input" data-action="filter-tasks" type="search" placeholder="' + tr('搜索任务') + '" autocomplete="off" style="max-width:280px;margin-bottom:16px">';
 
       if (!(p.tasks || []).length) {
         html += '<div class="empty">还没有任务。把项目按阶段拆开，例如“准备 / 制作 / 发布”。</div>';
@@ -357,6 +488,10 @@
               '<span class="status-chip ' + t.status + '" data-action="cycle-task" data-id="' + t.id + '" title="点击切换状态">' + tr(TASK_LABEL[t.status]) + '</span>' +
               '<span class="task-text" data-action="cycle-task" data-id="' + t.id + '">' + esc(t.text) + '</span>' +
               '<span class="row-actions">' +
+              '<span class="task-move">' +
+              '<button type="button" data-action="move-task" data-id="' + t.id + '" data-dir="-1" title="' + tr('上移') + '" aria-label="' + tr('上移') + '">↑</button>' +
+              '<button type="button" data-action="move-task" data-id="' + t.id + '" data-dir="1" title="' + tr('下移') + '" aria-label="' + tr('下移') + '">↓</button>' +
+              '</span>' +
               '<button class="btn-plain" data-action="toggle-stuck" data-id="' + t.id + '" type="button">' + (t.status === 'stuck' ? '取消卡住' : '卡住了') + '</button>' +
               '<button class="btn-plain" data-action="delete-task" data-id="' + t.id + '" type="button">删除</button>' +
               '</span></div>';
@@ -501,20 +636,102 @@
       }
       case 'delete-task': {
         var p3 = getProject(currentView.projectId);
-        p3.tasks = p3.tasks.filter(function (t) { return t.id !== id; });
-        touch(p3); save(); render();
+        var i3 = -1, removed3 = null;
+        p3.tasks.forEach(function (t, i) { if (t.id === id) { i3 = i; removed3 = t; } });
+        if (removed3) {
+          p3.tasks.splice(i3, 1);
+          touch(p3); save(); render();
+          (function (proj, pos, item) {
+            toast(tr('已删除任务'), function () {
+              proj.tasks.splice(Math.min(pos, proj.tasks.length), 0, item);
+              touch(proj); save(); render();
+            });
+          })(p3, i3, removed3);
+        }
+        break;
+      }
+      case 'move-task': {
+        var pm = getProject(currentView.projectId);
+        var dir = parseInt(el.getAttribute('data-dir'), 10) || 0;
+        var im = -1, jm = -1, stageOf = '';
+        pm.tasks.forEach(function (t, i) { if (t.id === id) { im = i; stageOf = t.stage || ''; } });
+        if (im > -1 && dir < 0) {
+          for (var a = im - 1; a >= 0; a--) { if ((pm.tasks[a].stage || '') === stageOf) { jm = a; break; } }
+        } else if (im > -1) {
+          for (var b = im + 1; b < pm.tasks.length; b++) { if ((pm.tasks[b].stage || '') === stageOf) { jm = b; break; } }
+        }
+        if (im > -1 && jm > -1) {
+          var tmp = pm.tasks[im];
+          pm.tasks[im] = pm.tasks[jm];
+          pm.tasks[jm] = tmp;
+          touch(pm); save(); render();
+        }
+        break;
+      }
+      case 'timer-toggle': timerToggle(); break;
+      case 'timer-reset': timerReset(); break;
+      case 'dismiss-notice': {
+        var nt = el.closest ? el.closest('.notice') : null;
+        if (nt && nt.parentNode) nt.parentNode.removeChild(nt);
+        break;
+      }
+      case 'copy-summary': {
+        var pc = getProject(id || currentView.projectId);
+        if (!pc) break;
+        var lines = ['# ' + (pc.name || '未命名项目'), '', '**目标：**' + (pc.goal || '—'), '**下一步：**' + (pc.next || '—')];
+        if (pc.due) lines.push('**截止：**' + pc.due);
+        lines.push('', '## 任务');
+        (pc.tasks || []).forEach(function (t) {
+          lines.push('- [' + (t.status === 'done' ? 'x' : ' ') + '] ' + (t.stage ? '[' + t.stage + '] ' : '') + t.text);
+        });
+        (function (text) {
+          var doneCopy = function () { toast(tr('已复制到剪贴板')); };
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(doneCopy, function () {});
+            } else if (typeof document.createElement === 'function') {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              (document.body || document.documentElement).appendChild(ta);
+              ta.select();
+              if (document.execCommand) document.execCommand('copy');
+              if (ta.parentNode) ta.parentNode.removeChild(ta);
+              doneCopy();
+            }
+          } catch (e2) {}
+        })(lines.join('\n'));
         break;
       }
       case 'delete-material': {
         var p4 = getProject(currentView.projectId);
-        p4.materials = p4.materials.filter(function (m) { return m.id !== id; });
-        touch(p4); save(); render();
+        var i4 = -1, removed4 = null;
+        p4.materials.forEach(function (m, i) { if (m.id === id) { i4 = i; removed4 = m; } });
+        if (removed4) {
+          p4.materials.splice(i4, 1);
+          touch(p4); save(); render();
+          (function (proj, pos, item) {
+            toast(tr('已删除资料'), function () {
+              proj.materials.splice(Math.min(pos, proj.materials.length), 0, item);
+              touch(proj); save(); render();
+            });
+          })(p4, i4, removed4);
+        }
         break;
       }
       case 'delete-log': {
         var p5 = getProject(currentView.projectId);
-        p5.logs = p5.logs.filter(function (l) { return l.id !== id; });
-        touch(p5); save(); render();
+        var i5 = -1, removed5 = null;
+        p5.logs.forEach(function (l, i) { if (l.id === id) { i5 = i; removed5 = l; } });
+        if (removed5) {
+          p5.logs.splice(i5, 1);
+          touch(p5); save(); render();
+          (function (proj, pos, item) {
+            toast(tr('已删除记录'), function () {
+              proj.logs.splice(Math.min(pos, proj.logs.length), 0, item);
+              touch(proj); save(); render();
+            });
+          })(p5, i5, removed5);
+        }
         break;
       }
       case 'finish-next': {
@@ -560,16 +777,38 @@
       }
       case 'delete-project': {
         if (confirm(tr('确定删除这个项目？它的任务、资料和日志都会一起删除。建议先导出备份。'))) {
-          state.projects = state.projects.filter(function (p) { return p.id !== id; });
+          var ip = -1, removedP = null;
+          state.projects.forEach(function (p, i) { if (p.id === id) { ip = i; removedP = p; } });
+          state.projects.splice(ip, 1);
           save();
           currentView = { kind: 'today', projectId: null };
           render();
+          if (removedP) {
+            (function (pos, item) {
+              toast(tr('已删除项目'), function () {
+                state.projects.splice(Math.min(pos, state.projects.length), 0, item);
+                save();
+                currentView = { kind: 'project', projectId: item.id };
+                render();
+              });
+            })(ip, removedP);
+          }
         }
         break;
       }
       case 'delete-inbox': {
-        state.inbox = state.inbox.filter(function (i) { return i.id !== id; });
+        var ii = -1, removedI = null;
+        state.inbox.forEach(function (it, i) { if (it.id === id) { ii = i; removedI = it; } });
+        state.inbox.splice(ii, 1);
         save(); render();
+        if (removedI) {
+          (function (pos, item) {
+            toast(tr('已删除收集项'), function () {
+              state.inbox.splice(Math.min(pos, state.inbox.length), 0, item);
+              save(); render();
+            });
+          })(ii, removedI);
+        }
         break;
       }
     }
@@ -855,6 +1094,61 @@
     save();
     currentView = { kind: 'project', projectId: p.id };
     currentTab = 'overview';
+  })();
+
+  /* 搜索项目 */
+  var searchEl = document.getElementById('project-search');
+  if (searchEl) {
+    searchEl.addEventListener('input', function () {
+      searchQuery = (searchEl.value || '').trim();
+      renderSidebar();
+    });
+  }
+
+  /* 任务筛选（直接过滤 DOM，保持输入焦点） */
+  document.addEventListener('input', function (e) {
+    var el2 = e.target;
+    if (!el2 || !el2.getAttribute || el2.getAttribute('data-action') !== 'filter-tasks') return;
+    var q = (el2.value || '').toLowerCase();
+    document.querySelectorAll('#app-main .task-row').forEach(function (row) {
+      row.style.display = !q || row.textContent.toLowerCase().indexOf(q) > -1 ? '' : 'none';
+    });
+  });
+
+  /* 快捷键：N 新建 · / 搜索 · Esc 取消 */
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName ? e.target.tagName : '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'n' || e.key === 'N') {
+      e.preventDefault();
+      creating = true;
+      renderSidebar();
+      var ci = document.querySelector('#create-slot input[name="name"]');
+      if (ci) ci.focus();
+    } else if (e.key === '/') {
+      if (searchEl) { e.preventDefault(); searchEl.focus(); }
+    } else if (e.key === 'Escape') {
+      if (creating) { creating = false; renderSidebar(); }
+    }
+  });
+
+  /* 首次使用提示（含独立免责声明入口） */
+  (function disclaimerNotice() {
+    if (typeof document.createElement !== 'function') return;
+    try {
+      if (localStorage.getItem('kg-legal-seen')) return;
+      localStorage.setItem('kg-legal-seen', '1');
+    } catch (e) { return; }
+    var shell = document.querySelector('.app-shell');
+    if (!shell || !shell.parentNode) return;
+    var n = document.createElement('div');
+    n.className = 'notice';
+    n.style.margin = '18px auto 0';
+    n.style.maxWidth = '1280px';
+    n.innerHTML = '<strong>' + tr('使用前请阅读') + '</strong><a href="disclaimer.html">《' + tr('免责声明') + '》</a>' +
+      tr('：本工具仅供个人计划与记录使用，数据保存在你的浏览器中。') +
+      ' <button class="btn-plain" type="button" data-action="dismiss-notice">' + tr('知道了') + '</button>';
+    shell.parentNode.insertBefore(n, shell);
   })();
 
   /* 启动 */

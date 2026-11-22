@@ -21,22 +21,45 @@
       <a href="templates.html">模板库</a>
       <a href="faq.html">常见问题</a>
       <a href="changelog.html">更新日志</a>
+      <div class="panel-controls">
+        <div class="slider lang-slider" style="--count:3">
+          <span class="slider-knob" aria-hidden="true"></span>
+          <button type="button" class="slider-stop" data-lang-set="zh" title="简体中文" aria-label="简体中文">中</button>
+          <button type="button" class="slider-stop" data-lang-set="en" title="English" aria-label="English">EN</button>
+          <button type="button" class="slider-stop" data-lang-set="ja" title="日本語" aria-label="日本語">日</button>
+        </div>
+        <div class="slider theme-slider" style="--count:4">
+          <span class="slider-knob" aria-hidden="true"></span>
+          <button type="button" class="slider-stop" data-theme-set="paper" title="纸感米色" aria-label="纸感米色">纸</button>
+          <button type="button" class="slider-stop" data-theme-set="night" title="暗夜" aria-label="暗夜">夜</button>
+          <button type="button" class="slider-stop" data-theme-set="mist" title="青灰" aria-label="青灰">青</button>
+          <button type="button" class="slider-stop" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝">靛</button>
+        </div>
+        <div class="panel-legal">
+          <a href="privacy.html">隐私政策</a>
+          <a href="terms.html">服务条款</a>
+          <a href="disclaimer.html">免责声明</a>
+          <a href="feedback.html">留言与评价</a>
+        </div>
+      </div>
     </nav>
     <div class="header-actions">
-      <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
-      <div class="switcher" id="lang-switch">
-        <button type="button" data-lang-set="zh">中</button>
-        <button type="button" data-lang-set="en">EN</button>
-        <button type="button" data-lang-set="ja" title="日本語" aria-label="日本語">日</button>
-      </div>
-      <div class="switcher theme-switch" id="theme-switch">
-        <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
-        <button type="button" class="theme-dot-night" data-theme-set="night" title="暗夜" aria-label="暗夜"></button>
-        <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
-        <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
-      </div>
+      <div class="slider lang-slider" style="--count:3" id="lang-switch">
+          <span class="slider-knob" aria-hidden="true"></span>
+          <button type="button" class="slider-stop" data-lang-set="zh" title="简体中文" aria-label="简体中文">中</button>
+          <button type="button" class="slider-stop" data-lang-set="en" title="English" aria-label="English">EN</button>
+          <button type="button" class="slider-stop" data-lang-set="ja" title="日本語" aria-label="日本語">日</button>
+        </div>
+      <div class="slider theme-slider" style="--count:4" id="theme-switch">
+          <span class="slider-knob" aria-hidden="true"></span>
+          <button type="button" class="slider-stop" data-theme-set="paper" title="纸感米色" aria-label="纸感米色">纸</button>
+          <button type="button" class="slider-stop" data-theme-set="night" title="暗夜" aria-label="暗夜">夜</button>
+          <button type="button" class="slider-stop" data-theme-set="mist" title="青灰" aria-label="青灰">青</button>
+          <button type="button" class="slider-stop" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝">靛</button>
+        </div>
       <a class="btn btn-ghost btn-small" href="about.html">关于</a>
       <a class="btn btn-small" href="app.html">打开工台</a>
+      <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
     </div>
   </div>
 </header>
@@ -107,7 +130,7 @@
     </div>
 
     <div class="callout mt-24">
-      <p class="mb-0"><strong>关于数据：</strong>站内的评分与留言保存在你自己的浏览器里（不上传服务器），换设备或清理浏览器数据后会消失；重要的评价建议用「在 GitHub 发表」或自行截图保存。详见 <a href="privacy.html">隐私政策</a>。</p>
+      <p class="mb-0"><strong>关于数据：</strong>站内的评分与留言保存在你自己的浏览器里（不上传服务器），换设备或清理浏览器数据后会消失；重要的评价建议用「在 GitHub 发表」或自行截图保存。详见 <a href="privacy.html">隐私政策</a> 与 <a href="disclaimer.html">免责声明</a>。</p>
     </div>
   </div>
 </main>

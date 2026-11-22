@@ -296,6 +296,8 @@
     ['分区与多语言', 'Zoned layout & multilingual support', '分区レイアウトと多言語対応'],
     ['字体与界面翻新', 'Typography & UI refresh', 'タイポグラフィとUI刷新'],
     ['留言与体验升级', 'Feedback & experience upgrades', 'フィードバックと体験の強化'],
+    ['界面翻新与功能补全', 'UI refresh & feature upgrades', 'UI刷新と機能強化'],
+    ['v2.0 · 2026 年 11 月 22 日', 'v2.0 · Nov 22, 2026', 'v2.0 · 2026年11月22日'],
     ['v1.4 · 2026 年 11 月 22 日', 'v1.4 · Nov 22, 2026', 'v1.4 · 2026年11月22日'],
     ['v1.3 · 2026 年 11 月 22 日', 'v1.3 · Nov 22, 2026', 'v1.3 · 2026年11月22日'],
     ['v1.2 · 2026 年 11 月 22 日', 'v1.2 · Nov 22, 2026', 'v1.2 · 2026年11月22日'],
@@ -349,7 +351,40 @@
     ['项目做完花五分钟写复盘：哪些步骤没必要、下次的经验是什么。它决定你下一个项目做得有多快。', 'Spend five minutes reviewing when a project ends: what was unnecessary, what you learned. It decides how fast your next project goes.', '完了時に5分の振り返りを。不要だった手順と次回の教訓が、次のプロジェクトの速さを決めます。'],
     ['留言与评价怎么用？', 'How do I use the feedback page?', 'フィードバックページの使い方は？'],
     ['站内留言会公开吗？', 'Are on-site messages public?', 'サイト内のメッセージは公開されますか？'],
-    ['如何在 GitHub 上公开评价？', 'How do I post a public review on GitHub?', 'GitHubで公開評価するには？']
+    ['如何在 GitHub 上公开评价？', 'How do I post a public review on GitHub?', 'GitHubで公開評価するには？'],
+
+    /* ---------- 滑动切换器与新功能 ---------- */
+    ['菜单', 'Menu', 'メニュー'],
+    ['纸', 'Paper', '纸'],
+    ['夜', 'Night', '夜'],
+    ['青', 'Mist', '青'],
+    ['靛', 'Indigo', '靛'],
+    ['撤销', 'Undo', '元に戻す'],
+    ['搜索项目', 'Search projects', 'プロジェクトを検索'],
+    ['搜索任务', 'Search tasks', 'タスクを検索'],
+    ['专注计时', 'Focus timer', 'フォーカスタイマー'],
+    ['点击开始，完成后会记入工作日志。', 'Press start — finished sessions are logged automatically.', '開始を押すと、完了時に作業ログに記録されます。'],
+    ['上移', 'Move up', '上へ'],
+    ['下移', 'Move down', '下へ'],
+    ['复制项目摘要', 'Copy summary', '概要をコピー'],
+    ['已复制到剪贴板', 'Copied to clipboard', 'クリップボードにコピー'],
+    ['快捷键：N 新建项目 · / 搜索 · Esc 取消', 'Shortcuts: N new project · / search · Esc cancel', 'ショートカット：N 新規 · / 検索 · Esc キャンセル'],
+    ['专注 {m} 分钟完成', 'Finished a {m}-minute focus session', '{m}分のフォーカス完了'],
+    ['近 7 天', 'Last 7 days', '直近7日'],
+    ['逾期', 'Overdue', '期限超過'],
+    ['没有找到匹配的项目。', 'No matching projects.', '一致するプロジェクトがありません。'],
+    ['使用前请阅读', 'Before use, please read', 'ご利用前にご確認ください'],
+    ['：本工具仅供个人计划与记录使用，数据保存在你的浏览器中。', ': this tool is for personal planning only; data stays in your browser.', '：本ツールは個人の計画・記録専用です。データはブラウザに保存されます。'],
+    ['开始', 'Start', '開始'],
+    ['暂停', 'Pause', '一時停止'],
+    ['重置', 'Reset', 'リセット'],
+    ['知道了', 'Got it', '了解'],
+    ['专注计时完成', 'Focus session complete', 'フォーカス完了'],
+    ['已删除任务', 'Task deleted', 'タスクを削除しました'],
+    ['已删除资料', 'Material deleted', '資料を削除しました'],
+    ['已删除记录', 'Log deleted', '記録を削除しました'],
+    ['已删除项目', 'Project deleted', 'プロジェクトを削除しました'],
+    ['已删除收集项', 'Item deleted', '収集項目を削除しました']
   ];
 
   var lang = 'zh';
@@ -442,16 +477,5 @@
     });
   }
 
-  /* 语言切换按钮状态 */
-  document.addEventListener('DOMContentLoaded', function () {
-    var group = document.getElementById('lang-switch');
-    if (!group) return;
-    group.querySelectorAll('[data-lang-set]').forEach(function (btn) {
-      btn.classList.toggle('on', btn.getAttribute('data-lang-set') === lang);
-      btn.addEventListener('click', function () {
-        try { localStorage.setItem('kg-lang', btn.getAttribute('data-lang-set')); } catch (e) {}
-        location.reload();
-      });
-    });
-  });
+  /* 语言切换交互由 site.js 的滑动切换器统一处理 */
 })();
