@@ -107,6 +107,46 @@
     return d.getFullYear() + '-' + m + '-' + day;
   }
 
+  /* 连续开工天数（按工作日志日期计算） */
+  function streakDays() {
+    var dates = {};
+    state.projects.forEach(function (p) {
+      (p.logs || []).forEach(function (l) { if (l.date) dates[l.date] = 1; });
+    });
+    if (!Object.keys(dates).length) return 0;
+    var d = new Date();
+    if (!dates[today()]) d.setDate(d.getDate() - 1);
+    var n = 0;
+    while (true) {
+      var k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if (!dates[k]) break;
+      n++;
+      d.setDate(d.getDate() - 1);
+    }
+    return n;
+  }
+
+  /* 完成庆祝：小彩点迸发 */
+  function burst(x, y) {
+    if (typeof document.createElement !== 'function') return;
+    var colors = ['#c96442', '#e0a33c', '#5c7a4e', '#4b6db3', '#e08b68'];
+    for (var i = 0; i < 12; i++) {
+      var s = document.createElement('span');
+      s.className = 'burst';
+      var a = (Math.PI * 2 * i) / 12 + Math.random() * 0.5;
+      var d = 60 + Math.random() * 80;
+      s.style.left = x + 'px';
+      s.style.top = y + 'px';
+      s.style.background = colors[i % colors.length];
+      s.style.setProperty('--dx', Math.cos(a) * d + 'px');
+      s.style.setProperty('--dy', (Math.sin(a) * d - 40) + 'px');
+      document.body.appendChild(s);
+      (function (node) {
+        setTimeout(function () { if (node.parentNode) node.parentNode.removeChild(node); }, 950);
+      })(s);
+    }
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -186,7 +226,20 @@
     var active = state.projects.filter(function (p) { return p.status === 'active'; });
     var others = state.projects.filter(function (p) { return p.status !== 'active'; });
 
-    var html = '<div class="app-toolbar"><h2 class="mb-0">今天从哪继续</h2></div>';
+    var hour = new Date().getHours();
+    var hello = hour < 6 ? tr('夜深了') : (hour < 12 ? tr('早上好') : (hour < 18 ? tr('下午好') : tr('晚上好')));
+    var doneToday = 0;
+    state.projects.forEach(function (p) {
+      (p.logs || []).forEach(function (l) { if (l.date === today()) doneToday++; });
+    });
+
+    var html = '<div class="greeting">' +
+      '<div class="hello">' + hello + '，' + tr('今天从哪继续') + '。</div>' +
+      '<div class="stat-row">' +
+      '<div class="stat"><div class="n">' + doneToday + '</div><div class="l">' + tr('今日完成') + '</div></div>' +
+      '<div class="stat"><div class="n">' + streakDays() + '</div><div class="l">' + tr('连续开工天数') + '</div></div>' +
+      '<div class="stat"><div class="n">' + active.length + '</div><div class="l">' + tr('进行中项目') + '</div></div>' +
+      '</div></div>';
 
     if (!state.projects.length) {
       html += '<div class="empty"><p>还没有项目。先创建一个，写清最终要交付什么。</p>' +
@@ -235,7 +288,9 @@
   /* ----- 项目页 ----- */
 
   function renderProject(p) {
-    var doneTasks = (p.tasks || []).filter(function (t) { return t.status === 'done'; }).length;
+    var totalTasks = (p.tasks || []).length;
+    var doneTasks = (p.tasks || []).filter(function (x) { return x.status === 'done'; }).length;
+    var pct = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
 
     var html = '<div class="app-toolbar">' +
       '<h2 class="mb-0" style="flex:1;min-width:200px">' + esc(p.name || '未命名项目') + '</h2>' +
@@ -245,8 +300,9 @@
       }).join('') +
       '</select>' +
       '<button class="btn-plain" data-action="copy-project" data-id="' + p.id + '" type="button">复制为新项目</button>' +
-      '<button class="btn-plain" data-action="delete-project" data-id="' + p.id + '" type="button" style="color:var(--danger)">删除</button>' +
-      '</div>';
+      '<button class="btn-plain" data-action="delete-project" data-id="' + p.id + '" type="button" style="color:var(--danger)">' + tr('删除') + '</button>' +
+      '</div>' +
+      '<div class="progress-wrap" title="' + tr('任务进度') + '"><div class="progress-bar"><i style="width:' + pct + '%"></i></div><span class="progress-num">' + pct + '%</span></div>';
 
     if (!p.next) {
       html += '<div class="notice">这个项目还没有<strong>下一步</strong>。定一个马上能做的动作，下次打开就能直接开工。</div>';
@@ -424,7 +480,12 @@
         var p1 = getProject(currentView.projectId);
         var t1 = findTask(p1, id);
         if (t1) {
-          t1.status = t1.status === 'todo' ? 'doing' : (t1.status === 'doing' ? 'done' : 'todo');
+          var nextStatus = t1.status === 'todo' ? 'doing' : (t1.status === 'doing' ? 'done' : 'todo');
+          if (nextStatus === 'done' && el.getBoundingClientRect) {
+            var r1 = el.getBoundingClientRect();
+            burst(r1.left + r1.width / 2, r1.top + r1.height / 2);
+          }
+          t1.status = nextStatus;
           touch(p1); save(); render();
         }
         break;
@@ -459,6 +520,10 @@
       case 'finish-next': {
         var p6 = getProject(id || currentView.projectId);
         if (p6 && p6.next) {
+          if (el.getBoundingClientRect) {
+            var r2 = el.getBoundingClientRect();
+            burst(r2.left + r2.width / 2, r2.top + r2.height / 2);
+          }
           p6.logs.push({ id: uid(), date: today(), text: tr('完成下一步：{step}').replace('{step}', p6.next) });
           p6.next = '';
           touch(p6); save(); render();
@@ -738,6 +803,36 @@
         ['计划', '定搬家日期'], ['计划', '列物品清单'], ['计划', '预约搬家公司'],
         ['打包', '打包非日常用品'], ['打包', '每个箱子贴标签'], ['打包', '准备搬家日急救箱'],
         ['入住', '检查水电燃气网络'], ['入住', '归位整理'], ['入住', '处理多余物品']
+      ]
+    },
+    podcast: {
+      name: '播客节目上线',
+      goal: '做出并发布第一期播客节目',
+      next: '写出第一期的三个话题提纲',
+      tasks: [
+        ['选题', '确定节目定位与名字'], ['选题', '写出第一期的三个话题提纲'], ['选题', '列出 5 位想邀请的嘉宾'],
+        ['录制', '准备录音设备与环境'], ['录制', '完成第一期录制'], ['录制', '剪辑并加片头音乐'],
+        ['发布', '选一个发布平台'], ['发布', '上传并写节目简介'], ['发布', '发布并记录链接']
+      ]
+    },
+    skill: {
+      name: '学习一项新技能',
+      goal: '用 8 周入门并做出一个小作品',
+      next: '报名入门课或买好教材',
+      tasks: [
+        ['准备', '选定要学的技能与目标水平'], ['准备', '找 3 个优质入门资源'], ['准备', '制定每周学习计划'],
+        ['练习', '每周固定练习时间'], ['练习', '完成 3 个小练习'], ['练习', '做一个小作品'],
+        ['巩固', '总结常见错误清单'], ['巩固', '向懂的人请教一次'], ['巩固', '整理学习笔记并公开']
+      ]
+    },
+    room: {
+      name: '房间改造',
+      goal: '把房间改造成舒服好用的样子',
+      next: '量好房间尺寸并画出平面图',
+      tasks: [
+        ['规划', '量好房间尺寸并画出平面图'], ['规划', '收集灵感图并定风格'], ['规划', '列出预算与采购清单'],
+        ['执行', '清理与断舍离'], ['执行', '改造收纳与灯光'], ['执行', '摆放与装饰'],
+        ['收尾', '拍照记录改造前后'], ['收尾', '调整不满意的小地方'], ['收尾', '列出下次改造清单']
       ]
     }
   };

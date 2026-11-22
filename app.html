@@ -15,19 +15,17 @@
   <div class="wrap">
     <a class="brand" href="index.html"><span class="mark">开</span>开工台</a>
     <nav class="nav">
-      <a href="index.html#features">功能</a>
-      <a href="scenarios.html">使用场景</a>
-      <a href="templates.html">模板库</a>
+      <a href="features.html">产品概览</a>
       <a href="help.html">使用帮助</a>
-      <a href="faq.html">常见问题</a>
-      <a href="changelog.html">更新日志</a>
+      <a href="templates.html">模板库</a>
+      <a href="feedback.html">留言与评价</a>
     </nav>
     <div class="header-actions">
       <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
       <div class="switcher" id="lang-switch">
         <button type="button" data-lang-set="zh">中</button>
         <button type="button" data-lang-set="en">EN</button>
-        <button type="button" data-lang-set="ja">日本語</button>
+        <button type="button" data-lang-set="ja" title="日本語" aria-label="日本語">日</button>
       </div>
       <div class="switcher theme-switch" id="theme-switch">
         <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
@@ -35,9 +33,7 @@
         <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
         <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
       </div>
-      <button class="btn btn-ghost btn-small" id="btn-export" type="button">导出备份</button>
-      <button class="btn btn-ghost btn-small" id="btn-import" type="button">导入</button>
-      <input type="file" id="import-file" accept="application/json,.json" hidden>
+      <a class="btn btn-ghost btn-small" href="index.html">← 返回首页</a>
     </div>
   </div>
 </header>
@@ -48,6 +44,12 @@
     <div class="side-actions">
       <button class="btn btn-small" id="btn-new-project" type="button">＋ 新建项目</button>
       <a class="btn btn-ghost btn-small" href="templates.html">从模板开始</a>
+    </div>
+
+    <div class="side-actions">
+      <button class="btn btn-ghost btn-small" id="btn-export" type="button">导出备份</button>
+      <button class="btn btn-ghost btn-small" id="btn-import" type="button">导入备份</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
     </div>
     <div id="create-slot"></div>
 
@@ -81,6 +83,7 @@
     <div class="footer-legal" style="border-top:none;padding-top:0">
       <span>© <span data-year>2026</span> 开工台</span>
       <a href="index.html">首页</a>
+      <a href="feedback.html">留言与评价</a>
       <a href="help.html">使用帮助</a>
       <a href="privacy.html">隐私政策</a>
       <a href="terms.html">服务条款</a>

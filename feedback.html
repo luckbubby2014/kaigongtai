@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>留言与评价 · 开工台</title>
+<meta name="description" content="开工台留言与评价：给产品打分、写下使用感受与建议，也可以在 GitHub 上公开评价。">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/styles.css">
+<script>(function(){try{var t=localStorage.getItem('kg-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark">开</span>开工台</a>
+    <nav class="nav">
+      <a href="features.html">产品概览</a>
+      <a href="help.html">使用帮助</a>
+      <a href="scenarios.html">使用场景</a>
+      <a href="templates.html">模板库</a>
+      <a href="faq.html">常见问题</a>
+      <a href="changelog.html">更新日志</a>
+    </nav>
+    <div class="header-actions">
+      <button class="nav-toggle" type="button" aria-label="打开菜单" aria-expanded="false">菜单</button>
+      <div class="switcher" id="lang-switch">
+        <button type="button" data-lang-set="zh">中</button>
+        <button type="button" data-lang-set="en">EN</button>
+        <button type="button" data-lang-set="ja" title="日本語" aria-label="日本語">日</button>
+      </div>
+      <div class="switcher theme-switch" id="theme-switch">
+        <button type="button" class="theme-dot-paper" data-theme-set="paper" title="纸感米色" aria-label="纸感米色"></button>
+        <button type="button" class="theme-dot-night" data-theme-set="night" title="暗夜" aria-label="暗夜"></button>
+        <button type="button" class="theme-dot-mist" data-theme-set="mist" title="青灰" aria-label="青灰"></button>
+        <button type="button" class="theme-dot-indigo" data-theme-set="indigo" title="靛蓝" aria-label="靛蓝"></button>
+      </div>
+      <a class="btn btn-ghost btn-small" href="about.html">关于</a>
+      <a class="btn btn-small" href="app.html">打开工台</a>
+    </div>
+  </div>
+</header>
+
+<main class="doc">
+  <div class="wrap narrow">
+    <div class="page-hero">
+      <span class="eyebrow">留言与评价</span>
+      <h1>说说用起来怎么样。</h1>
+      <p class="lead">评分、留言和建议都收在这里。站内内容默认保存在你自己的浏览器里；想让评价被更多人看到，一键就能转到 GitHub 公开发表。</p>
+    </div>
+
+    <!-- 评价区 -->
+    <h2 class="mt-40">给开工台打个分</h2>
+    <div class="rating-box">
+      <div class="tpl-meta"><span>你的评分</span></div>
+      <div class="star-rating" id="star-rating" role="radiogroup" aria-label="评分">
+        <button type="button" data-star="1" aria-label="1 星">★</button>
+        <button type="button" data-star="2" aria-label="2 星">★</button>
+        <button type="button" data-star="3" aria-label="3 星">★</button>
+        <button type="button" data-star="4" aria-label="4 星">★</button>
+        <button type="button" data-star="5" aria-label="5 星">★</button>
+      </div>
+
+      <div class="tpl-meta"><span>它给你的感觉（可多选）</span></div>
+      <div class="tag-picks" id="tag-picks">
+        <button type="button" data-tag="好用">好用</button>
+        <button type="button" data-tag="简单">简单</button>
+        <button type="button" data-tag="上手快">上手快</button>
+        <button type="button" data-tag="设计好看">设计好看</button>
+        <button type="button" data-tag="值得改进">值得改进</button>
+        <button type="button" data-tag="功能太少">功能太少</button>
+        <button type="button" data-tag="有 bug">有 bug</button>
+      </div>
+
+      <div class="field">
+        <label>具体说说</label>
+        <textarea id="review-text" placeholder="哪个功能最常用？哪里让你觉得别扭？最希望加什么？"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-small" id="save-review" type="button">保存我的评价</button>
+        <a class="btn btn-ghost btn-small" id="gh-review" href="https://github.com/luckbubby2014/kaigongtai/issues/new" target="_blank" rel="noopener noreferrer">在 GitHub 公开评价 →</a>
+      </div>
+
+      <div class="msg-list" id="review-list"></div>
+    </div>
+
+    <!-- 留言区 -->
+    <h2 class="mt-40">留言区</h2>
+    <div class="message-box">
+      <div class="tpl-meta"><span>想说的话、建议、脑洞，都欢迎</span></div>
+      <div class="field">
+        <label>写下留言</label>
+        <textarea id="message-text" placeholder="例如：希望任务能拖动排序；或者，我是用它来准备考试的……"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-small" id="save-message" type="button">写下留言</button>
+        <a class="btn btn-ghost btn-small" id="gh-message" href="https://github.com/luckbubby2014/kaigongtai/issues/new" target="_blank" rel="noopener noreferrer">在 GitHub 留言 →</a>
+      </div>
+      <div class="msg-list" id="message-list"></div>
+    </div>
+
+    <!-- GitHub -->
+    <div class="gh-card">
+      <p><strong>想让评价公开可见？</strong>GitHub 上的评价会公开展示在仓库的 Issue 列表里，任何人都能看到和回应。</p>
+      <a class="btn btn-small" href="https://github.com/luckbubby2014/kaigongtai/issues" target="_blank" rel="noopener noreferrer">查看公开评价</a>
+    </div>
+
+    <div class="callout mt-24">
+      <p class="mb-0"><strong>关于数据：</strong>站内的评分与留言保存在你自己的浏览器里（不上传服务器），换设备或清理浏览器数据后会消失；重要的评价建议用「在 GitHub 发表」或自行截图保存。详见 <a href="privacy.html">隐私政策</a>。</p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h4>开工台</h4>
+        <p style="max-width:26em">面向个人创作者的项目推进工具。记住目标，安排下一步，把项目做完。</p>
+      </div>
+      <div>
+        <h4>产品</h4>
+        <ul>
+          <li><a href="app.html">打开工台</a></li>
+          <li><a href="features.html">产品概览</a></li>
+          <li><a href="templates.html">模板库</a></li>
+          <li><a href="changelog.html">更新日志</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>帮助</h4>
+        <ul>
+          <li><a href="scenarios.html">使用场景</a></li>
+          <li><a href="help.html">使用帮助</a></li>
+          <li><a href="faq.html">常见问题</a></li>
+          <li><a href="feedback.html">留言与评价</a></li>
+          <li><a href="about.html">关于本站</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>法律</h4>
+        <ul>
+          <li><a href="privacy.html">隐私政策</a></li>
+          <li><a href="terms.html">服务条款</a></li>
+          <li><a href="disclaimer.html">免责声明</a></li>
+          <li><a href="disclaimer.html#ip">知识产权与侵权投诉</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-legal">
+      <span>© <span data-year>2026</span> 开工台</span>
+      <a href="index.html">首页</a>
+      <a href="feedback.html">留言与评价</a>
+      <a href="privacy.html">隐私政策</a>
+      <a href="terms.html">服务条款</a>
+      <a href="disclaimer.html">免责声明</a>
+    </div>
+    <p class="footer-note">本站为独立开发的非官方工具，数据默认保存在访问者自己的浏览器中。使用前请阅读服务条款与免责声明；本工具不构成任何专业建议，亦不对使用结果作出保证。</p>
+  </div>
+</footer>
+
+<script src="assets/i18n.js"></script>
+<script src="assets/feedback.js"></script>
+<script src="assets/site.js"></script>
+
+</body>
+</html>
