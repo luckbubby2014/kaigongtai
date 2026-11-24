@@ -48,7 +48,7 @@
 
   /* ---------- 滑动切换器（语言 / 界面风格） ---------- */
 
-  var LANGS = ['zh', 'en', 'ja'];
+  var LANGS = ['zh', 'tw', 'en', 'ja', 'fr', 'de', 'es'];
   var THEMES = ['paper', 'night', 'mist', 'indigo'];
 
   function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
